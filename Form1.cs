@@ -33,10 +33,13 @@ namespace VizientImport
         DateTimeUtilities dtu = new DateTimeUtilities();
         private LogManager lm = LogManager.GetInstance();
         private bool changed = false;
+        private bool trace = false;
         private int enteredRowCount = 0;
 
         public Form1()
         {
+            if (trace)
+                lm.Write("Form1.Constructor");
             InitializeComponent();
             WindowState = FormWindowState.Maximized;
             InitGrid();
@@ -45,6 +48,8 @@ namespace VizientImport
 
         private void InitGrid()
         {
+            if (trace)
+                lm.Write("Form1.InitGrid");
             ConfigData = (NameValueCollection)ConfigurationSettings.GetConfig("appSettings");
             AddGridRows(defaultRowCount);
             CreateColHeaders();
@@ -52,6 +57,7 @@ namespace VizientImport
             lm.LogFile = ConfigData.Get("logFileName");
             currentPath = ConfigData.Get("default_path");
             backupPath = ConfigData.Get("backup_path");
+            trace = System.Convert.ToBoolean(ConfigData.Get("trace"));
         }
 
 
@@ -61,6 +67,8 @@ namespace VizientImport
         /// <param name="rowCount"></param>
         private void AddGridRows(int rowCount)
         {
+            if (trace)
+                lm.Write("Form1.AddGridRows");
             dGrid.Rows.Add(rowCount);
             for (int x = 0; x < rowCount; x++)
             {
@@ -74,6 +82,8 @@ namespace VizientImport
         }
         private void CreateGridViewCols()
         {
+            if (trace)
+                lm.Write("Form1.CreateGridViewCols");
             dGrid.Columns.Add((new DataGridViewColumn()).Name = "Action Code", "Action Code (A,C,D or R)");
 
             dGrid.Columns.Add((new DataGridViewColumn()).Name = "Manufacturer Item Number", "Manufacturer Item Number");
@@ -133,6 +143,8 @@ namespace VizientImport
 
         private void CreateColHeaders()
         {
+            if (trace)
+                lm.Write("Form1.CreateColHeaders");
             #region colHeaders
             //load the column name hashtable and build the colNames string
             int colNo = 0;
@@ -255,6 +267,8 @@ namespace VizientImport
 
         private void WriteColsHeaders()
         {
+            if (trace)
+                lm.Write("Form1.WriteColHeaders");
             File.AppendAllText(currentPath + currentFileName, colNames);  //CHANGE: WriteAllText      + ".csv"
         }
 
@@ -269,7 +283,8 @@ namespace VizientImport
             string cellValue = "";
             string requiredCheck = "";
             DataGridViewRow row = null;
-
+            if (trace)
+                lm.Write("Form1.ParseItemList");
             if (dGrid.Rows.Count > 0)
             {
                 if (dGrid.Columns.Count > 0)
@@ -348,6 +363,8 @@ namespace VizientImport
         private void CheckRequiredField(int rowNo, int colNo)
         {
             string reqdValue = "";
+            if (trace)
+                lm.Write("Form1.CheckRequiredField");
             switch (colNo)
             {
                 case 0:
@@ -402,8 +419,9 @@ namespace VizientImport
 
         private void RestoreGrid(string fileContents)
         {
-            //this is used when opening a *.csv file
-
+            //this is used when opening a *.csv file --see ImportToGrid for Excel 
+            if (trace)
+                lm.Write("Form1.RestoreGrid");
             string[] savedData = fileContents.Split("||".ToCharArray());
             string[] rowData = new string[savedData.Length];
             string[] colData;
@@ -457,6 +475,8 @@ namespace VizientImport
 
         private void CheckChanged()
         {
+            if (trace)
+                lm.Write("Form1.CheckChanged");
             if (changed)
             {
                 DialogResult dLogRslt = MessageBox.Show("Do you want to save any changes you made?", "Save", MessageBoxButtons.YesNoCancel);
@@ -471,6 +491,8 @@ namespace VizientImport
             //int row = e.RowIndex;
             //if (upperRowLimit < row)
             //    upperRowLimit = row;
+            if (trace)
+                lm.Write("Form1.dGrid_CellMouseClick");
             changed = true;
         }
 
@@ -484,6 +506,8 @@ namespace VizientImport
 
         private void SetColHeaders(SLDocument sldVizImport)
         { //this is called from btnExport_Click
+            if (trace)
+                lm.Write("Form1.SetColHeaders");
             int row = 1;
             try
             {
@@ -506,6 +530,8 @@ namespace VizientImport
 
         private void btnSave_Click(object sender, EventArgs e)
         {
+            if (trace)
+                lm.Write("Form1.btnSave_Click");
             string[] pathInfo;
             saveFileDlog = new SaveFileDialog();
             saveFileDlog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
@@ -551,20 +577,34 @@ namespace VizientImport
                         lm.Write("btnSave_Click: " + ex.Message);
                     }
                 }
-                dGrid.Rows.Clear();
-                dGrid.Rows.Clear();
-                //dGrid = new DataGridView();
-                //CreateGridViewCols();
-                AddGridRows(defaultRowCount);
-                listAsString = "";
-                enteredRowCount = 0;
-                changed = false;
-                required.Clear();
+                ClearGrid();
+                //dGrid.Rows.Clear();
+                //dGrid.Rows.Clear();
+                ////dGrid = new DataGridView();
+                ////CreateGridViewCols();
+                //AddGridRows(defaultRowCount);
+                //listAsString = "";
+                //enteredRowCount = 0;
+                //changed = false;
+                //required.Clear();
             }
+        }
+
+        private void ClearGrid()
+        {
+            dGrid.Rows.Clear();
+            dGrid.Rows.Clear();
+            AddGridRows(defaultRowCount);
+            listAsString = "";
+            enteredRowCount = 0;
+            changed = false;
+            required.Clear();
         }
 
         private void btnRestore_Click(object sender, EventArgs e)
         {
+            if (trace)
+                lm.Write("Form1.btnRestore_Click");
             //restored = true;
             string[] fullPath;
             CheckChanged();
@@ -609,12 +649,16 @@ namespace VizientImport
 
         private void btnQuit_Click(object sender, EventArgs e)
         {
+            if (trace)
+                lm.Write("Form1.btnQuit_Click");
             CheckChanged();
             Application.Exit();
         }
 
         private void btnNew_Click(object sender, EventArgs e)
         {
+            if (trace)
+                lm.Write("Form1.btnNew_Click");
             CheckChanged();
             dGrid.Rows.Clear();
             AddGridRows(defaultRowCount);
@@ -624,8 +668,9 @@ namespace VizientImport
 
         private void ImportToGrid(string[] rowData, int colCount, int rowCount)
         {
-            //this is used when opening an Excel file
-
+            //this is used when opening an Excel file - see RestoreGrid for csv
+            if (trace)
+                lm.Write("Form1.ImportToGrid");
             string[] colData;
             string dataCheck = "";
             string thisRow = "";
@@ -670,7 +715,10 @@ namespace VizientImport
 
         private void btnImport_Click(object sender, EventArgs e)
         {
+            if (trace)
+                lm.Write("Form1.btnImport_Click");
             Import imp = new Import();
+            imp.Trace = trace;
             string[] fullPath;
             openFileDlog = new OpenFileDialog()
             {
@@ -724,7 +772,10 @@ namespace VizientImport
 
         private void ImportExcelFile(string filePath)
         {
+            if (trace)
+                lm.Write("Form1.ImportExcelFile");
             Import imp = new Import();
+            imp.Trace = trace;
             imp.ExcelFile(filePath);
             string[] rowData = imp.FileContents.Split("\r\n".ToCharArray());
             ImportToGrid(rowData, imp.ColCount, imp.RowCount);
@@ -732,6 +783,8 @@ namespace VizientImport
 
         private string RemoveNulls(string[] colData)
         {
+            if (trace)
+                lm.Write("Form1.RemoveNulls");
             string noNulls = "";
             int count = 0;
 
@@ -748,6 +801,8 @@ namespace VizientImport
 
         private void btnExport_Click(object sender, EventArgs e)
         {
+            if (trace)
+                lm.Write("Form1.btnExport_Click");
             //int rowNo = 0;
             int colNo = 0;
             int outPutRow = 2;  //row index for the output file
@@ -901,7 +956,8 @@ namespace VizientImport
                     }
                     sldVizImport.SelectWorksheet("VizientImport");
                     sldVizImport.SaveAs(currentPath + "VizientExport" + dtu.DateTimeCoded() + ".xlsx");
-                    btnSave_Click(sender, e);
+                    //       btnSave_Click(sender, e);
+                    ClearGrid();
                 }
                 catch (Exception ex)
                 {
@@ -913,6 +969,8 @@ namespace VizientImport
 
         private int CountRows()
         {
+            if (trace)
+                lm.Write("Form1.CountRows");
             string cellValu = "";
             int rowCount = 0;
             int filledCellCount = 0;
@@ -950,11 +1008,15 @@ namespace VizientImport
 
         private void dGrid_RowEnter(object sender, DataGridViewCellEventArgs e)
         {
+            if (trace)
+                lm.Write("Form1.dGrid_RowEnter");
             enteredRowCount += CheckRow(dGrid.Rows[e.RowIndex]);
         }
 
         private int CheckRow(DataGridViewRow row)
         {
+            if (trace)
+                lm.Write("Form1.CheckRow");
             int count = 0;
             for (int i = 0; i < row.Cells.Count; i++)
             {
@@ -971,7 +1033,9 @@ namespace VizientImport
         }
 
         private string VerifyUserInput(int colNo, string cellValue)
-        {
+        {           
+            if (trace)
+                lm.Write("Form1.VerifyUserInput");
             switch (colNo)
             {
                 case 5:     //Item Description
@@ -1033,11 +1097,15 @@ namespace VizientImport
 
         private string RemoveChars(string targetChar, string cellValu)
         {
+            if (trace)
+                lm.Write("Form1.RemoveChars");
             return RemoveChars(targetChar, cellValu, "");
         }
 
         private string RemoveChars(string targetChar, string cellValu, string type)
         {
+            if (trace)
+                lm.Write("Form1.RemoveChars - 3 params");
             string rtnStr = "";
             string[] valuParts = cellValu.Split(targetChar.ToCharArray());
             if (type == "dlrValu" && valuParts.Length == 2)
@@ -1059,6 +1127,8 @@ namespace VizientImport
 
         private void dGrid_RowsRemoved(object sender, DataGridViewRowsRemovedEventArgs e)
         {
+            if (trace)
+                lm.Write("Form1.dGrid_RowsRemoved");
             //if(!restored)
             //    enteredRowCount -= e.RowCount;
             ResetRowHeaders();
@@ -1067,6 +1137,8 @@ namespace VizientImport
 
         private void ResetRowHeaders()
         {
+            if (trace)
+                lm.Write("Form1.ResetRowHeaders");
             int numberOfRows = dGrid.Rows.Count;
             for (int x = 0; x < numberOfRows; x++)
             {

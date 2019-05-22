@@ -12,7 +12,12 @@ namespace VizientImport
         private string fileName = "";
         private int rowCount = 0;
         private int colCount = 0;
+        private bool trace = false;
 
+        public bool Trace
+        {
+            set { trace = value; }
+        }
         public string FilePath
         {
             set {filePath=value; }
@@ -42,14 +47,16 @@ namespace VizientImport
             Excel.Range xlRange = xlWorksheet.UsedRange;
             rowCount = xlRange.Rows.Count;        
             colCount = xlRange.Columns.Count;
+            if (trace)
+                lm.Write("Convert.ConvertToCsv");
             try
             {
-                for (int i = 1; i <= rowCount; i++)
+                for (int r = 1; r <= rowCount; r++)
                 {
-                    for (int j = 1; j <= colCount; j++)
+                    for (int c = 1; c <= colCount; c++)
                     {
                         //new line
-                        if (j == 1)
+                        if (c == 1)
                         {
                             Console.Write("\r\n");
                             if (cellValu.Length > 0)
@@ -57,11 +64,11 @@ namespace VizientImport
                         }
 
                         //write the value to the console
-                        if (xlRange.Cells[i, j] != null && xlRange.Cells[i, j].Value2 != null)
+                        if (xlRange.Cells[r, c] != null && xlRange.Cells[r, c].Value2 != null)
                         {
-                            tempValu = RemoveCommas(xlRange.Cells[i, j].Value2.ToString());
-                            //Console.WriteLine(xlRange.Cells[i, j].Value2.ToString() + "\t");
-                            //tempValu = RemoveCommas(xlRange.Cells[i, j].Value2.ToString());
+                            tempValu = RemoveCommas(xlRange.Cells[r, c].Value2.ToString());
+                            //Console.WriteLine(xlRange.Cells[r, c].Value2.ToString() + "\t");
+                            //tempValu = RemoveCommas(xlRange.Cells[r, c].Value2.ToString());
                             //if (tempValu.Length == 0)
                             //    tempValu = "x";
                             //cellValu += tempValu + "|";
@@ -89,6 +96,8 @@ namespace VizientImport
         private string RemoveCommas(string cellContents)
         {
             string noCommas = cellContents.Replace(",","");
+            if (trace)
+                lm.Write("Convert.RemoveCommas");
             return noCommas.Trim();
 
         }
