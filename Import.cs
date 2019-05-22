@@ -13,6 +13,12 @@ namespace VizientImport
         //private string filePath = @"C:\xlsx2csv\";
         //private string fileName = "ImportFile.csv";
         private string fileContents = "";
+        private bool trace = false;
+
+        public bool Trace
+        {
+            set { trace = value; }
+        }
 
         public string ErrorMessage
         {
@@ -35,10 +41,12 @@ namespace VizientImport
         public void ExcelFile(string fullPath)
         {
             Convert cnv = new Convert();
+            cnv.Trace = trace;
             string[] path;
             string filePath = "";
             string fileName = "";
-
+            if (trace)
+                lm.Write("Import.ExcelFile");
             path = fullPath.Split(@"\".ToCharArray());
             fileName = path[path.Length - 1];
             for(int x = 0; x < path.Length - 1; x++)
@@ -67,6 +75,8 @@ namespace VizientImport
         {
             string cellValu = "";
             int x = 1;
+            if (trace)
+                lm.Write("Import.ExcelFile");
             try
             {
                 for(; x < 1000000000; x++)
